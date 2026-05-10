@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../theme/zemen_theme.dart';
 import '../services/performance_service.dart';
+import '../services/ai_service.dart';
 import '../utils/glass_effect.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -90,6 +91,23 @@ class SettingsScreen extends StatelessWidget {
             trailing: isSelected ? const Icon(LucideIcons.check, color: ZemenTheme.satinGold) : null,
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildBrainManagement(AIService aiService) {
+    return GlassEffect(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: ListTile(
+          leading: const Icon(LucideIcons.database, color: ZemenTheme.satinGold),
+          title: const Text("Clear Local Brain Cache", style: TextStyle(color: Colors.white, fontSize: 15)),
+          subtitle: Text("Storage Used: ${aiService.storageUsage}", style: const TextStyle(color: Colors.white24, fontSize: 11)),
+          trailing: TextButton(
+            onPressed: () => aiService.clearBrainSync(),
+            child: const Text("CLEAR", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ),
       ),
     );
   }

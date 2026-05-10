@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'onboarding_screen.dart';
 import '../theme/zemen_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

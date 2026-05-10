@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'database_service.dart';
 import 'persona_service.dart';
