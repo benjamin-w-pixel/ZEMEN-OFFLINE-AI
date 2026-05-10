@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'database_service.dart';
+import 'persona_service.dart';
 
 enum EngineStatus { sleeping, loading, thinking, speaking, error }
 
@@ -27,6 +29,16 @@ class AIEngineService extends ChangeNotifier {
 
   AIEngineService() {
     _initConnectivity();
+    _loadChatHistory();
+  }
+
+  Future<void> _loadChatHistory() async {
+    final history = await DatabaseService().getMessages();
+    if (history.isNotEmpty) {
+      _messages.clear();
+      _messages.addAll(history);
+      notifyListeners();
+    }
   }
 
   EngineStatus get status => _status;
@@ -59,19 +71,31 @@ class AIEngineService extends ChangeNotifier {
 
   /// Sends a prompt to the Hybrid Engine (Online/Offline)
   Future<void> askUltimateBrain(String prompt) async {
-    _messages.add(ChatMessage(text: prompt, isUser: true));
+    final userMsg = ChatMessage(text: prompt, isUser: true);
+    _messages.add(userMsg);
+    await DatabaseService().saveMessage(userMsg);
+    
     _status = EngineStatus.thinking;
     _lastResponse = "";
     notifyListeners();
 
+    // Wrap with Persona (Phase 3)
+    final personaPrompt = PersonaService.wrapWithPersona(prompt);
+
     try {
       if (_isOnline) {
-        await _askOnlineBrain(prompt);
+        await _askOnlineBrain(personaPrompt);
       } else {
-        await _askOfflineBrain(prompt);
+        await _askOfflineBrain(personaPrompt);
       }
 
-      _messages.add(ChatMessage(text: _lastResponse, isUser: false));
+      // Process with Persona Signature (Phase 3)
+      _lastResponse = PersonaService.processResponse(_lastResponse, !_isOnline);
+
+      final responseMsg = ChatMessage(text: _lastResponse, isUser: false);
+      _messages.add(responseMsg);
+      await DatabaseService().saveMessage(responseMsg);
+      
       _status = EngineStatus.speaking;
       notifyListeners();
     } catch (e) {
