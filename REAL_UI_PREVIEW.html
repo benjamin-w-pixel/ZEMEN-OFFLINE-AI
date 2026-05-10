@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zemen AI - Interactive Prototype</title>
+    <style>
+        :root {
+            --obsidian: #000000;
+            --satin-gold: #D4AF37;
+            --subtle-gray: #1A1C1E;
+        }
+        * { box-sizing: border-box; }
+        
+        body {
+            background-color: #111;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .phone-frame {
+            width: 340px;
+            height: 680px;
+            background-color: var(--obsidian);
+            border: 8px solid #333;
+            border-radius: 40px;
+            position: relative;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen { display: none; height: 100%; width: 100%; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+        .screen.active { display: flex; }
+
+        .quick-actions::-webkit-scrollbar { display: none; }
+        .quick-actions { display: flex; gap: 12px; overflow-x: auto; margin-top: 15px; width: 100%; padding-bottom: 5px; scrollbar-width: none; }
+
+        .action-card { min-width: 85px; height: 85px; background: var(--subtle-gray); border-radius: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 10px; flex-shrink: 0; cursor: pointer; transition: 0.2s; }
+        .action-card:active { transform: scale(0.9); background: #333; }
+        .action-card i { font-size: 20px; color: var(--satin-gold); margin-bottom: 5px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; width: 100%; }
+        .card { background: var(--subtle-gray); padding: 15px; border-radius: 20px; border: 1px solid #333; display: flex; flex-direction: column; cursor: pointer; transition: 0.2s; }
+        .card:active { transform: scale(0.95); border-color: var(--satin-gold); }
+        .card i { font-size: 24px; color: var(--satin-gold); margin-bottom: 8px; }
+
+        .header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .stat { display: flex; justify-content: space-between; padding: 15px; background: #111; border-radius: 15px; margin-bottom: 10px; font-size: 13px; width: 100%; }
+
+        .controls { margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        button { background: #222; color: var(--satin-gold); border: 1px solid var(--satin-gold); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; }
+
+        /* SYNC BUTTON ANIMATION */
+        .sync-btn { background: var(--satin-gold); color: black; padding: 15px; border-radius: 15px; border: none; font-weight: bold; width: 100%; margin-top: 20px; cursor: pointer; }
+        .sync-btn:active { opacity: 0.8; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="screen active" id="splash" onclick="show('sync')" style="justify-content: center; align-items: center; cursor: pointer;">
+            <i class="fas fa-hexagon-nodes" style="font-size: 60px; color: var(--satin-gold);"></i>
+            <div style="margin-top: 20px; font-weight: 900; letter-spacing: 5px; text-align: center;">ZEMEN AI</div>
+            <p style="font-size: 10px; opacity: 0.3; margin-top: 20px;">Tap to Start</p>
+        </div>
+
+        <div class="screen" id="sync" style="padding: 30px; justify-content: center;">
+            <h2 style="color: var(--satin-gold);">Brain Sync</h2>
+            <p style="font-size: 11px; opacity: 0.5;">Offline AI Model Extraction...</p>
+            <div id="prog-cont" style="display:none;">
+                <div style="height: 6px; background: #222; border-radius: 3px; margin: 15px 0; overflow: hidden;">
+                    <div id="prog-fill" style="height: 100%; background: var(--satin-gold); width: 0%;"></div>
+                </div>
+                <div id="prog-text" style="font-size: 10px; text-align: center;">0% Initialized</div>
+            </div>
+            <button class="sync-btn" id="sync-trigger" onclick="startSync()">Sync Ultimate Brain (2GB)</button>
+        </div>
+
+        <div class="screen" id="home" style="padding: 20px;">
+            <div class="header-row">
+                <div><div style="font-size: 20px; font-weight: bold;">ሰላም, Student!</div><div style="opacity: 0.4; font-size: 10px;">Premium Hub</div></div>
+                <i class="fas fa-user-circle" style="font-size: 30px; color: var(--satin-gold); cursor: pointer;" onclick="show('settings')"></i>
+            </div>
+            <div class="quick-actions">
+                <div class="action-card" onclick="startChat('Scanning...')"><i class="fas fa-camera"></i>Scan</div>
+                <div class="action-card" onclick="startChat('Quiz Mode')"><i class="fas fa-file-alt"></i>Quiz</div>
+                <div class="action-card" onclick="startChat('Translating...')"><i class="fas fa-language"></i>Trans</div>
+                <div class="action-card" onclick="startChat('Voice Ready')"><i class="fas fa-microphone"></i>Voice</div>
+            </div>
+            <div class="grid">
+                <div class="card" onclick="startChat('Mathematics')"><i class="fas fa-calculator" style="color: #4A90E2;"></i><b>Math</b></div>
+                <div class="card" onclick="startChat('Ethio History')"><i class="fas fa-landmark" style="color: #F5A623;"></i><b>History</b></div>
+                <div class="card" onclick="startChat('Biology')"><i class="fas fa-dna" style="color: #7ED321;"></i><b>Biology</b></div>
+                <div class="card" onclick="startChat('Physics')"><i class="fas fa-atom" style="color: #BD10E0;"></i><b>Physics</b></div>
+            </div>
+        </div>
+
+        <div class="screen" id="chat">
+            <div style="padding: 20px; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-chevron-left" onclick="show('home')" style="color: var(--satin-gold); cursor: pointer;"></i>
+                <div><b id="chat-title">Professor</b><br><span style="font-size: 9px; color: var(--satin-gold);">READY</span></div>
+            </div>
+            <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: #222; padding: 12px; border-radius: 15px; max-width: 85%; font-size: 12px;">Selam! How can I help you study <span id="chat-sub">today</span>?</div>
+                <div style="align-self: flex-end; color: var(--satin-gold); background: rgba(212, 175, 55, 0.1); padding: 12px; border-radius: 15px; max-width: 85%; font-size: 12px;">Let's start!</div>
+            </div>
+        </div>
+
+        <div class="screen" id="settings" style="padding: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <i class="fas fa-chevron-left" onclick="show('home')" style="color: var(--satin-gold); cursor: pointer;"></i>
+                <h3 style="margin: 0;">Brain Health</h3>
+            </div>
+            <div class="stat"><span>Neural Temp</span><span style="color: var(--satin-gold);">42°C</span></div>
+            <div class="stat"><span>Offline Status</span><span style="color: #4CAF50;">Optimized</span></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="show('splash')">Reset</button>
+    </div>
+
+    <script>
+        function show(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startSync() {
+            document.getElementById('sync-trigger').style.display = 'none';
+            document.getElementById('prog-cont').style.display = 'block';
+            let p = 0;
+            let interval = setInterval(() => {
+                p += 1;
+                document.getElementById('prog-fill').style.width = p + '%';
+                document.getElementById('prog-text').innerText = p + '% Initialized';
+                if(p >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => show('home'), 500);
+                }
+            }, 20);
+        }
+
+        function startChat(subject) {
+            document.getElementById('chat-title').innerText = subject;
+            document.getElementById('chat-sub').innerText = subject;
+            show('chat');
+        }
+    </script>
+</body>
+</html>
